@@ -28,12 +28,21 @@ WORKDIR /var/www
 
 COPY . .
 
+RUN mkdir -p \
+    storage/framework/cache \
+    storage/framework/sessions \
+    storage/framework/views \
+    bootstrap/cache
+
+RUN chmod -R 775 storage bootstrap/cache
+
+RUN chown -R www-data:www-data storage bootstrap/cache
+
 RUN composer install --no-dev --optimize-autoloader
 
 COPY docker/nginx/default.conf /etc/nginx/sites-available/default
 
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
-
 
 EXPOSE 80
 
