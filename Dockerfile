@@ -1,6 +1,7 @@
 FROM php:8.2-fpm
 
 RUN apt-get update && apt-get install -y \
+    nginx \
     git \
     curl \
     unzip \
@@ -10,9 +11,8 @@ RUN apt-get update && apt-get install -y \
     libfreetype6-dev \
     libzip-dev \
     libonig-dev \
-    libxml2-dev
-
-RUN docker-php-ext-install \
+    libxml2-dev \
+    && docker-php-ext-install \
     pdo \
     pdo_mysql \
     mbstring \
@@ -28,6 +28,13 @@ WORKDIR /var/www
 
 COPY . .
 
-RUN composer install
+RUN composer install --no-dev --optimize-autoloader
 
-CMD ["php-fpm"]
+COPY docker/nginx/default.conf /etc/nginx/sites-available/default
+
+RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+
+
+EXPOSE 80
+
+CMD service nginx start && php-fpm
